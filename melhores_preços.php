@@ -136,7 +136,7 @@
         Cadasto Produto
         </a>
       </li>
-      <li class="listar-empresas">
+      <li class="listar-empresa">
         <a href="listar_empresa.php" class="nav-link text-white">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard2-check" viewBox="0 0 16 16">
         <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5h3Z"/>
@@ -170,7 +170,7 @@
     </ul>
     <hr>
     <div class="dropdown">
-      <a href="/ProvaDiscWeb/login.php" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <a href="/Prova-Discursiva-programaWEB/login.php" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-square" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
         </svg>
@@ -182,58 +182,56 @@
   <div class="b-example-divider b-example-vr"></div>
 
   <div class="col-md-10 titulo-cad">
-    <h1>Listar Melhores Preços</h1>
-      
-    </div>
+    <h1>Listar Produtos mais baratos</h1>
+    <div>
+    <?php
 
-<?php 
-    // Conexão com o banco de dados
-$conn = new mysqli("localhost", "root", "", "usuario_fael");
+// Conexão com o banco de dados
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "usuario_fael";
 
-// Verifica se houve algum erro na conexão
+$conn = new mysqli($servername, $username, $password, $dbname);
+
 if ($conn->connect_error) {
-    die("Falha na conexão: " . $conn->connect_error);
+  die("Connection failed: " . $conn->connect_error);
 }
 
-// Prepara o comando SQL para buscar os produtos mais baratos
-$sql = "SELECT cp.nome_produto, cp.valor, ce.nome
-        FROM cadastro_produtos cp
-        INNER JOIN cadastro_empresas ce ON cp.cnpj = ce.cnpj
-        WHERE cp.valor = (SELECT MIN(valor) FROM cadastro_produtos)";
+// Consulta SQL para selecionar o nome da empresa e o produto mais barato
+$sql = "SELECT cadastro_empresas.nome, cadastro_produtos.nome_produto, cadastro_produtos.quantidade ,MIN(cadastro_produtos.valor) as valor FROM cadastro_empresas
+        INNER JOIN cadastro_produtos ON cadastro_empresas.cnpj = cadastro_produtos.cnpj
+        GROUP BY cadastro_empresas.nome";
 
-// Executa o comando SQL
-$resultado = $conn->query($sql);
+$result = $conn->query($sql);
 
-// Verifica se a consulta retornou algum resultado
-if ($resultado->num_rows > 0) {
-    // Cria a tabela para exibir os dados
-    echo '<table class="table table-striped">';
-    echo '<thead>';
-    echo '<tr>';
-    echo '<th scope="col">Nome do Produto</th>';
-    echo '<th scope="col">Valor</th>';
-    echo '<th scope="col">Nome da Empresa</th>';
-    echo '</tr>';
-    echo '</thead>';
-    echo '<tbody>';
-
-    // Percorre os resultados e exibe os dados na tabela
-    while ($linha = $resultado->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . $linha["nome_produto"] . '</td>';
-        echo '<td>R$ ' . number_format($linha["valor"], 2, ',', '.') . '</td>';
-        echo '<td>' . $linha["nome_empresa"] . '</td>';
-        echo '</tr>';
-    }
-
-    // Fecha a tabela
-    echo '</tbody>';
-    echo '</table>';
+if ($result->num_rows > 0) {
+  // Loop através dos resultados da consulta
+ // Exibição dos resultados em uma tabela Bootstrap
+  echo "<table class='table'>";
+  echo "<thead>";
+  echo "<tr>";
+  echo "<th>Empresa</th>";
+  echo "<th>Produto</th>";
+  echo "<th>Quantidade</th>";
+  echo "<th>Preço</th>";
+  echo "</tr>";
+  echo "</thead>";
+  echo "<tbody>";
+  while($row = $result->fetch_assoc()) {
+      echo "<tr>";
+      echo "<td>" . $row["nome"] . "</td>";
+      echo "<td>" . $row["nome_produto"] . "</td>";
+      echo "<td>" . $row['quantidade'] . "</td>";
+      echo "<td>" . $row["valor"] . "</td>";
+      echo "</tr>";
+}
+echo "</tbody>";
+echo "</table>";
 } else {
-    echo "Nenhum produto encontrado.";
-}   
-    ?>
-
+  echo "Nenhum resultado encontrado.";
+}
+?>
 
     <script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 
